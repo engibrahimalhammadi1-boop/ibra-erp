@@ -1,0 +1,194 @@
+
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBRA Soft ERP | نظام إدارة المطاعم</title>
+    <!-- ✅ PWA Meta Tags - أضف هذه -->
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="IBRA ERP">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                        en: ['Inter', 'sans-serif']
+                    },
+                    colors: {
+                        primary: '#1e3a8a',
+                        secondary: '#d97706',
+                        dark: '#0f172a',
+                        surface: '#ffffff',
+                        background: '#f1f5f9'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="h-screen flex overflow-hidden font-sans text-slate-800 selection:bg-primary selection:text-white">
+
+    <!-- ✅ فحص الجلسة قبل عرض التطبيق -->
+    <script>
+        (function() {
+            const session = sessionStorage.getItem('ibra_current_user');
+            if (!session) {
+                window.location.href = 'login.html';
+            }
+        })();
+    </script>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed top-0 right-0 w-64 h-full bg-dark text-white flex flex-col shadow-2xl z-40" 
+       style="transform: translateX(100%); transition: transform 0.3s ease;">
+        <div class="h-20 flex items-center justify-between border-b border-slate-700/50 relative overflow-hidden px-4">
+            <div class="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent"></div>
+            <h1 class="text-2xl font-bold font-en tracking-wider relative z-10 flex items-center gap-2">
+                <i class="fa-solid fa-utensils text-secondary"></i>
+                IBRA <span class="font-light">ERP</span>
+            </h1>
+            <button onclick="toggleSidebar()" class="relative z-10 w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <nav id="main-nav" class="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+            <!-- Menu injected by JS -->
+        </nav>
+
+        <div class="p-4 border-t border-slate-700/50 text-center">
+            <p class="text-xs text-slate-400 font-en" id="sidebar-version"></p>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <header class="h-20 bg-surface border-b border-slate-200 flex items-center justify-between px-4 md:px-6 z-20 shadow-sm">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="text-slate-500 hover:text-primary transition-colors w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center" title="إظهار/إخفاء القائمة">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <h2 id="page-title" class="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-house text-slate-400"></i>
+                    الرئيسية
+                </h2>
+            </div>
+            
+            <div class="flex items-center gap-2 md:gap-4">
+                <button onclick="openQuickSearch()" class="hidden sm:flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm text-slate-600 transition-colors">
+                    <i class="fa-solid fa-search"></i>
+                    <span>بحث سريع...</span>
+                    <kbd class="text-xs bg-white px-2 py-0.5 rounded border">Ctrl+K</kbd>
+                </button>
+                <button onclick="toggleNotifications()" class="relative w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+                
+                <!-- ✅ قائمة المستخدم -->
+                <div class="relative">
+                    <button data-user-menu-toggle onclick="toggleUserMenu()" class="flex items-center gap-3 hover:bg-slate-100 rounded-lg p-1 pr-2 transition-colors">
+                        <div class="hidden sm:flex flex-col items-end">
+                            <span class="text-sm font-bold" id="header-user-name">مدير النظام</span>
+                            <span class="text-xs text-slate-500">متصل الآن</span>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white font-bold shadow-md">
+                            <span id="header-user-avatar">م</span>
+                        </div>
+                    </button>
+                    <div id="user-menu" class="hidden absolute left-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-50">
+                        <div class="p-3 border-b border-slate-100">
+                            <p class="font-bold text-sm" id="user-menu-name">مدير النظام</p>
+                            <p class="text-xs text-slate-500" id="user-menu-role">مدير</p>
+                        </div>
+                        <button onclick="logout()" class="w-full text-right px-4 py-2.5 hover:bg-red-50 text-red-600 text-sm font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-sign-out-alt"></i> تسجيل الخروج
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div id="content-area" class="flex-1 overflow-y-auto p-4 md:p-6 relative bg-slate-50">
+            <!-- Screen content injected here -->
+        </div>
+    </main>
+
+    <!-- Modals Container -->
+    <div id="modal-root"></div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 left-5 z-[100] flex flex-col gap-2"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[90] hidden items-center justify-center">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-3">
+            <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-slate-600 font-bold">جاري التحميل...</p>
+        </div>
+    </div>
+
+        <!-- Scripts -->
+    <script src="js/db.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/screens/pos.js"></script>
+    <script src="js/screens/kitchen.js"></script>
+    <script src="js/screens/tables.js"></script>
+    <script src="js/screens/menu.js"></script>
+    <script src="js/screens/inventory.js"></script>
+    <script src="js/screens/purchases.js"></script>
+    <script src="js/screens/invoices.js"></script>
+    <script src="js/screens/customers.js"></script>
+    <script src="js/screens/suppliers.js"></script>
+    <script src="js/screens/reports.js"></script>
+    <script src="js/screens/vouchers.js"></script>
+    <script src="js/screens/accounts.js"></script>
+    <script src="js/screens/employees.js"></script>
+    <script src="js/screens/payroll.js"></script>
+    <script src="js/screens/cashbox.js"></script>
+    <script src="js/screens/users.js"></script>
+    <script src="js/screens/settings.js"></script>
+    <script src="js/screens/logs.js"></script>
+    <script src="js/screens/guide.js"></script>
+    <script src="js/screens/ai.js"></script>
+    <script src="js/screens/developer.js"></script>
+    <script src="js/screens/einvoice.js"></script>
+    <script src="js/app.js"></script>
+        <!-- ✅ PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('✅ Service Worker registered'))
+                    .catch(err => console.log('❌ SW registration failed:', err));
+            });
+        }
+        
+        // منع النقر المزدوج للتكبير
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) e.preventDefault();
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
+</body>
+</html>
