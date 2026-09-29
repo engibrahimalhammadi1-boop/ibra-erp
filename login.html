@@ -1,0 +1,82 @@
+
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول | IBRA Soft ERP</title>
+    <!-- ✅ PWA Meta Tags - أضف هذه -->
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="IBRA ERP">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Cairo', 'sans-serif'], en: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#1e3a8a', secondary: '#d97706', dark: '#0f172a' }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="font-sans text-slate-800">
+    <div id="login-root"></div>
+    
+    <script src="js/db.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/screens/login.js"></script>
+    
+    <script>
+        try {
+            const session = sessionStorage.getItem('ibra_current_user');
+            if (session) {
+                window.location.href = 'app.html';
+            } else {
+                if (typeof Login !== 'undefined') {
+                    document.getElementById('login-root').innerHTML = Login.render();
+                    if (Login.afterRender) Login.afterRender();
+                } else {
+                    document.getElementById('login-root').innerHTML = 
+                        '<div style="padding:40px;text-align:center;color:red;font-size:18px;">❌ خطأ: login.js لم يُحمَّل</div>';
+                }
+            }
+        } catch (err) {
+            console.error('Login error:', err);
+            document.getElementById('login-root').innerHTML = 
+                '<div style="padding:40px;text-align:center;color:red;">' + err.message + '</div>';
+        }
+    </script>
+        <!-- ✅ PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('✅ Service Worker registered'))
+                    .catch(err => console.log('❌ SW registration failed:', err));
+            });
+        }
+        
+        // منع النقر المزدوج للتكبير
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) e.preventDefault();
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
+</body>
+</html>
